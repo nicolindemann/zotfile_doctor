@@ -23,7 +23,7 @@ import pathlib
 import re
 import sqlite3
 import unicodedata
-
+import subprocess
 
 def get_db_set(db, d):
     conn = sqlite3.connect(db)
@@ -78,6 +78,10 @@ def main(db, d, clean=False):
 
     db_not_dir = db_set.difference(dir_set)
     dir_not_db = dir_set.difference(db_set)
+    both = dir_set.intersection(db_set)
+
+    for f in sorted(both):
+        subprocess.run(["tag", "-a", "in_zotero", os.path.join(d, f)]) 
 
     print(f"There were {len(db_not_dir)}/{len(db_set)} files in DB but not in zotfile directory:")
     for f in sorted(db_not_dir):
@@ -85,6 +89,7 @@ def main(db, d, clean=False):
     print(f"\nThere were {len(dir_not_db)}/{len(dir_set)} files in zotfile directory but not in DB:")
     for f in sorted(dir_not_db):
         print("   " + f)
+        subprocess.run(["tag", "-a", "missing_in_zotero", os.path.join(d, f)]) 
 
     if clean and len(dir_not_db) > 0:
         for f in dir_not_db:
